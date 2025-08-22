@@ -22,9 +22,8 @@ This project uses a structured memory bank system with specialized context files
 
 ### Core Context Files
 
-* **CLAUDE-troubleshooting.md** - Common issues and proven solutions (optimized)
-* **CLAUDE-config-variables.md** - Configuration variables reference
-* **archive/resolved-issues.md** - Historical troubleshooting cases (archived)
+* **CLAUDE-troubleshooting.md** - Common issues and proven solutions for Facebook Ad Manager
+* **CLAUDE-config-variables.md** - Configuration variables and settings reference
 
 **Important:** Check these files for relevant information before starting work to understand the current system architecture and troubleshooting patterns.
 
@@ -66,4 +65,16 @@ A comprehensive web application for scraping Facebook Ad Library data, downloadi
 
 **Data Flow**: URL input → n8n scraping → immediate table display → background media downloads → real-time thumbnail updates
 
-**Development Priority**: Follow phases in docs/PLAN.md for systematic implementation with clear deliverables and success criteria.
+**Development Status**: Phase 1 COMPLETE ✅ - Currently in Phase 2 (Core Scraping & Data Flow). Follow phases in docs/PLAN.md for systematic implementation with clear deliverables and success criteria.
+
+**Current Project State**:
+- ✅ **Phase 1 Foundation Complete** - All infrastructure ready
+- ✅ Frontend: React + TypeScript with environment detection running (port 5174)
+- ✅ Backend: Express API with comprehensive endpoints running (port 3001)
+- ✅ Database: Supabase integration with service connection established
+- ✅ Python: Enhanced media downloader (`ad_media_downloader.py`) with CLI support
+- ✅ Storage: Supabase Storage service with auto-bucket creation
+- ✅ Real-time: Subscription hooks implemented for live updates
+- ✅ n8n: Webhook (ID: 8xTPT55gwzaepe62) configured for job_id tracking
+- 🔄 **Phase 2 in Progress**: Building functional UI components (URL input → ads table)
+- ⏳ Database migration needs to be run in Supabase dashboard when ready

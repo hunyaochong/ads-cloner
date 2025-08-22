@@ -10,6 +10,8 @@ import time
 from urllib.parse import urlparse, parse_qs
 from datetime import datetime
 import json
+import argparse
+import sys
 
 
 class FacebookAdDownloader:
@@ -70,7 +72,7 @@ class FacebookAdDownloader:
         else:
             return "bin"  # Binary fallback
 
-    def download_media(self, url, media_type="unknown"):
+    def download_media(self, url, media_type="unknown", custom_filename=None):
         """Download a single media file"""
         try:
             print(f"Downloading {media_type}: {url[:80]}...")
@@ -84,9 +86,17 @@ class FacebookAdDownloader:
             file_extension = self.get_file_extension(url, content_type)
 
             # Generate filename
-            file_id = self.extract_file_id(url)
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"fb_ad_{media_type}_{timestamp}_{file_id}.{file_extension}"
+            if custom_filename:
+                filename = custom_filename
+                # Ensure it has the correct extension
+                if not filename.endswith(f'.{file_extension}'):
+                    base_name = os.path.splitext(filename)[0]
+                    filename = f"{base_name}.{file_extension}"
+            else:
+                file_id = self.extract_file_id(url)
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                filename = f"fb_ad_{media_type}_{timestamp}_{file_id}.{file_extension}"
+            
             filepath = os.path.join(self.download_dir, filename)
 
             # Download and save file
@@ -144,7 +154,34 @@ class FacebookAdDownloader:
 
 
 def main():
-    # Your Facebook ad URLs
+    parser = argparse.ArgumentParser(description='Facebook Ad Media Downloader')
+    parser.add_argument('--single-url', help='Download a single URL')
+    parser.add_argument('--output-dir', default='./fb_ad_downloads', help='Output directory')
+    parser.add_argument('--filename', help='Custom filename for single download')
+    parser.add_argument('--media-type', default='unknown', choices=['image', 'video', 'unknown'], 
+                       help='Media type for single download')
+    
+    args = parser.parse_args()
+    
+    # Initialize downloader
+    downloader = FacebookAdDownloader(download_dir=args.output_dir)
+    
+    if args.single_url:
+        # Single URL download mode
+        print("🚀 Starting Single File Download...")
+        print(f"URL: {args.single_url}")
+        print(f"Download directory: {os.path.abspath(downloader.download_dir)}")
+        
+        result = downloader.download_media(args.single_url, args.media_type, args.filename)
+        
+        if result["status"] == "success":
+            print(f"✅ Download completed: {result['filename']} ({result['size']:,} bytes)")
+            sys.exit(0)
+        else:
+            print(f"❌ Download failed: {result['error']}")
+            sys.exit(1)
+    
+    # Original batch mode
     media_urls = [
         (
             "https://scontent-atl3-1.xx.fbcdn.net/v/t39.35426-6/532378749_3950423875267589_3355186878584971694_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=c53f8f&_nc_ohc=qw_FGEQFPKAQ7kNvwFYOHbo&_nc_oc=AdmPgfClr6ndcJLMf3lwMTtWEqNTf2R4z9YwnpF56j7yEdhJPb-wm-W1HcBJSRp8cXI&_nc_zt=14&_nc_ht=scontent-atl3-1.xx&_nc_gid=UZ35u6qwh_tTxEl__fc88w&oh=00_AfUylZ2wFt-HinVdhn-D368UxemM5vhEjBQOeDv6-GhgpA&oe=68AD9709",
@@ -155,9 +192,6 @@ def main():
             "video",
         ),
     ]
-
-    # Initialize downloader
-    downloader = FacebookAdDownloader(download_dir="./fb_ad_downloads")
 
     print("🚀 Starting Facebook Ad Media Download...")
     print(f"Download directory: {os.path.abspath(downloader.download_dir)}")
