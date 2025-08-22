@@ -1,0 +1,26 @@
+{
+  "timestamp": "2025-08-22T10:42:23.171936",
+  "total": 2,
+  "successful": 2,
+  "failed": 0,
+  "results": [
+    {
+      "status": "success",
+      "filename": "fb_ad_image_20250822_104214_532378749.jpg",
+      "filepath": "./fb_ad_downloads/fb_ad_image_20250822_104214_532378749.jpg",
+      "size": 1807104,
+      "type": "image",
+      "url": "https://scontent-atl3-1.xx.fbcdn.net/v/t39.35426-6/532378749_3950423875267589_3355186878584971694_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=c53f8f&_nc_ohc=qw_FGEQFPKAQ7kNvwFYOHbo&_nc_oc=AdmPgfClr6ndcJLMf3lwMTtWEqNTf2R4z9YwnpF56j7yEdhJPb-wm-W1HcBJSRp8cXI&_nc_zt=14&_nc_ht=scontent-atl3-1.xx&_nc_gid=UZ35u6qwh_tTxEl__fc88w&oh=00_AfUylZ2wFt-HinVdhn-D368UxemM5vhEjBQOeDv6-GhgpA&oe=68AD9709",
+      "content_type": "image/jpeg"
+    },
+    {
+      "status": "success",
+      "filename": "fb_ad_video_20250822_104219_1755830539.mp4",
+      "filepath": "./fb_ad_downloads/fb_ad_video_20250822_104219_1755830539.mp4",
+      "size": 4426817,
+      "type": "video",
+      "url": "https://video-atl3-3.xx.fbcdn.net/o1/v/t2/f2/m366/AQOOO5JiUlqrfVnipD7FSJcnmVtEU8Q8vA2dCMShyOsfAiiu0LGoYSWh4KkTLbTR-Sligi-Fb2tX4zdrSw2mU0MZ0DyVSEfPAS5WJ11l-TMv9A.mp4?_nc_cat=107&_nc_sid=5e9851&_nc_ht=video-atl3-3.xx.fbcdn.net&_nc_ohc=yl3iG2iyNm4Q7kNvwEPDs-j&efg=eyJ2ZW5jb2RlX3RhZyI6Inhwdl9wcm9ncmVzc2l2ZS5WSV9VU0VDQVNFX1BST0RVQ1RfVFlQRS4uQzMuNzIwLmRhc2hfaDI2NC1iYXNpYy1nZW4yXzcyMHAiLCJ4cHZfYXNzZXRfaWQiOjU0NTk3NzMyODU0MzAyOSwidmlfdXNlY2FzZV9pZCI6MTA3OTksImR1cmF0aW9uX3MiOjMwLCJ1cmxnZW5fc291cmNlIjoid3d3In0%3D&ccb=17-1&vs=294c25cdec5cfbf5&_nc_vs=HBksFQIYRWZiX2VwaGVtZXJhbC9CRTQyNjlCRkVFMTUwMjFCMzBBNzlFRUY0NjlGNjc5Ml9tdF8xX3ZpZGVvX2Rhc2hpbml0Lm1wNBUAAsgBEgAVAhhFZmJfZXBoZW1lcmFsLzU0NDA2NDU0QjRBOUJEQzE2QzAzM0Y2RTcxOEZFNzk2X210XzBfYXVkaW9fZGFzaGluaXQubXA0FQICyAESACgAGAAbAogHdXNlX29pbAExEnByb2dyZXNzaXZlX3JlY2lwZQExFQAAJuqUyYuIpPgBFQIoAkMzLBdAPhItDlYEGRgZZGFzaF9oMjY0LWJhc2ljLWdlbjJfNzIwcBEAdQBl3qgBAA&_nc_gid=UZ35u6qwh_tTxEl__fc88w&_nc_zt=28&oh=00_AfXq8_2QHJ2YJlJ8KdELcxJ8KmRYUdpm0RXhQcpUJPvEdQ&oe=68AD898D",
+      "content_type": "video/mp4"
+    }
+  ]
+}

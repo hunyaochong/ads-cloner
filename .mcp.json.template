@@ -1,0 +1,60 @@
+{
+    "mcpServers": {
+      "supabase": {
+        "command": "npx",
+        "args": [
+          "-y",
+          "@supabase/mcp-server-supabase@latest",
+          "--read-only",
+          "--project-ref=YOUR_SUPABASE_PROJECT_REF"
+        ],
+        "env": {
+          "SUPABASE_ACCESS_TOKEN": "YOUR_SUPABASE_ACCESS_TOKEN"
+        }
+      },
+      "shadcn-ui": {
+        "command": "npx",
+        "args": ["@jpisnice/shadcn-ui-mcp-server", "--github-api-key", "YOUR_GITHUB_API_KEY"]
+      },
+      "Framelink Figma MCP": {
+        "command": "npx",
+        "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR_FIGMA_API_KEY", "--stdio"]
+      },
+      "n8n-mcp": {
+        "command": "npx",
+        "args": ["n8n-mcp"],
+        "env": {
+          "MCP_MODE": "stdio",
+          "LOG_LEVEL": "error",
+          "DISABLE_CONSOLE_OUTPUT": "true",
+          "N8N_API_URL": "YOUR_N8N_API_URL",
+          "N8N_API_KEY": "YOUR_N8N_API_KEY"
+        }
+      },
+      "context7": {
+        "command": "npx",
+        "args": ["-y", "@upstash/context7-mcp"]
+      },
+      "playwright": {
+        "command": "npx",
+        "args": [
+          "@playwright/mcp@latest"
+        ]
+      },
+      "cloudflare": {
+        "command": "npx",
+        "args": ["mcp-remote", "https://docs.mcp.cloudflare.com/sse"]
+      },
+      "gemini-cli": {
+        "command": "npx",
+        "args": ["-y", "gemini-mcp-tool"]
+      },
+      "Bright Data": {
+        "command": "npx",
+        "args": [
+          "mcp-remote",
+          "https://mcp.brightdata.com/mcp?token=YOUR_BRIGHT_DATA_TOKEN"
+        ]
+      }
+    }
+}

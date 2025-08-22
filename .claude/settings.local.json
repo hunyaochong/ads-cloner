@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3:*)",
+      "Bash(pip3 install:*)",
+      "Bash(source:*)",
+      "Bash(python:*)",
+      "mcp__n8n-mcp__n8n_get_workflow",
+      "mcp__n8n-mcp__n8n_get_workflow_structure",
+      "mcp__n8n-mcp__n8n_get_workflow_minimal",
+      "mcp__n8n-mcp__n8n_get_workflow_details",
+      "mcp__n8n-mcp__search_node_properties",
+      "Bash(git remote add:*)",
+      "Bash(git branch:*)",
+      "Bash(git push:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git rm:*)",
+      "Bash(rm:*)"
+    ],
+    "deny": []
+  },
+  "enabledMcpjsonServers": [
+    "supabase",
+    "shadcn-ui",
+    "Framelink Figma MCP",
+    "n8n-mcp",
+    "context7",
+    "playwright",
+    "cloudflare",
+    "gemini-cli",
+    "Bright Data"
+  ]
+}
