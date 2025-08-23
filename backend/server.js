@@ -96,6 +96,11 @@ app.post('/api/scraping-jobs', async (req, res) => {
       return res.status(400).json({ error: 'URL is required' });
     }
 
+    if (!supabase) {
+      return res.status(500).json({ error: 'Database not available - check environment variables' });
+    }
+
+    // Create the job in Supabase
     const { data, error } = await supabase
       .from('scraping_jobs')
       .insert({
@@ -110,6 +115,74 @@ app.post('/api/scraping-jobs', async (req, res) => {
 
     if (error) {
       throw error;
+    }
+
+    // Update job status to 'scraping' before calling n8n
+    await supabase
+      .from('scraping_jobs')
+      .update({ status: 'scraping' })
+      .eq('id', data.id);
+
+    // Trigger n8n webhook
+    const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL;
+    if (n8nWebhookUrl) {
+      try {
+        console.log(`🔗 Triggering n8n webhook for job ${data.id}`);
+        console.log(`   URL: ${url}`);
+        
+        // Try POST first, then GET if it fails
+        let n8nResponse;
+        try {
+          n8nResponse = await fetch(n8nWebhookUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              job_id: data.id,
+              url: url
+            })
+          });
+        } catch (postError) {
+          console.log('POST failed, trying GET method...');
+          const urlParams = new URLSearchParams({
+            job_id: data.id,
+            url: url
+          });
+          n8nResponse = await fetch(`${n8nWebhookUrl}?${urlParams}`, {
+            method: 'GET'
+          });
+        }
+
+        if (!n8nResponse.ok) {
+          const errorText = await n8nResponse.text();
+          console.error('n8n webhook error:', errorText);
+          
+          // Update job status to failed
+          await supabase
+            .from('scraping_jobs')
+            .update({ 
+              status: 'failed',
+              error_message: `n8n webhook failed: ${errorText}`
+            })
+            .eq('id', data.id);
+        } else {
+          console.log('✅ n8n webhook triggered successfully');
+        }
+      } catch (webhookError) {
+        console.error('Error calling n8n webhook:', webhookError);
+        
+        // Update job status to failed
+        await supabase
+          .from('scraping_jobs')
+          .update({ 
+            status: 'failed',
+            error_message: `Webhook error: ${webhookError.message}`
+          })
+          .eq('id', data.id);
+      }
+    } else {
+      console.warn('⚠️  N8N_WEBHOOK_URL not configured - skipping webhook trigger');
     }
 
     res.json({ success: true, job: data });

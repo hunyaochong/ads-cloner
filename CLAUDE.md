@@ -63,18 +63,24 @@ A comprehensive web application for scraping Facebook Ad Library data, downloadi
 
 **Database Schema**: Job-based tracking with `scraping_jobs` and `ads` tables, using job_id foreign keys to maintain audit trails of scraping sessions.
 
-**Data Flow**: URL input → n8n scraping → immediate table display → background media downloads → real-time thumbnail updates
+**Data Flow**: URL input → Backend webhook trigger → n8n async scraping → auto-download trigger → parallel processing → real-time updates
 
-**Development Status**: Phase 1 COMPLETE ✅ - Currently in Phase 2 (Core Scraping & Data Flow). Follow phases in docs/PLAN.md for systematic implementation with clear deliverables and success criteria.
+**Job Status Flow**: `pending` → `scraping` → `downloading` → `completed`/`failed`
+
+**Development Status**: Phase 2 Step 4 COMPLETE ✅ - Webhook integration functional with auto-download logic. Next: Step 5 (Auto-Download Implementation)
 
 **Current Project State**:
 - ✅ **Phase 1 Foundation Complete** - All infrastructure ready
-- ✅ Frontend: React + TypeScript with environment detection running (port 5174)
-- ✅ Backend: Express API with comprehensive endpoints running (port 3001)
-- ✅ Database: Supabase integration with service connection established
+- ✅ **Phase 2 Step 1 Complete** - URL input interface with job creation
+- ✅ **Phase 2 Step 4 Complete** - n8n webhook integration with status tracking
+- ✅ Frontend: React + TypeScript with functional AdLibraryImporter component
+- ✅ Backend: Express API with n8n webhook integration (port 3001)
+- ✅ Database: Supabase integration with job status tracking
 - ✅ Python: Enhanced media downloader (`ad_media_downloader.py`) with CLI support
 - ✅ Storage: Supabase Storage service with auto-bucket creation
 - ✅ Real-time: Subscription hooks implemented for live updates
-- ✅ n8n: Webhook (ID: 8xTPT55gwzaepe62) configured for job_id tracking
-- 🔄 **Phase 2 in Progress**: Building functional UI components (URL input → ads table)
-- ⏳ Database migration needs to be run in Supabase dashboard when ready
+- ✅ n8n: Webhook (ID: 8xTPT55gwzaepe62) configured for POST requests with immediate return
+- ✅ UI: AdLibraryImporter with Meta URL validation and comprehensive error handling
+- ✅ Webhook Flow: Backend → n8n POST → 200 response → async scraping → direct Supabase insertion
+- 🔄 **Phase 2 Step 5 Next**: Auto-download trigger implementation in useRealtimeAds hook
+- ⏳ n8n workflow needs to be activated and configured for direct Supabase insertion

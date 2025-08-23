@@ -91,13 +91,21 @@ ALTER TABLE scraping_jobs REPLICA IDENTITY FULL;
 ## Data Flow
 
 1. **User Input**: Enter Meta Ad Library URL
-2. **Job Creation**: Frontend creates `scraping_jobs` record → gets `job_id`
-3. **n8n Trigger**: Frontend calls n8n webhook with `job_id` and URL
-4. **Scraping**: n8n scrapes Meta Ad Library, returns JSON with ads array (each ad includes `job_id`)
-5. **Immediate Display**: Frontend inserts ads into Supabase with `download_status: 'pending'`, table shows immediately
-6. **Download Process**: Frontend calls backend API to start media downloads
-7. **Media Download**: Backend downloads media files using Python script, uploads to Supabase Storage
-8. **Real-time Updates**: Frontend shows thumbnails appearing as downloads complete
+2. **Job Creation**: Frontend creates `scraping_jobs` record → gets `job_id` (status: `"pending"`)
+3. **n8n Trigger**: Backend calls n8n webhook with `job_id` and URL
+4. **Webhook Response**: n8n returns 200 immediately → Backend updates job status to `"scraping"`
+5. **Async Scraping**: n8n scrapes Meta Ad Library, inserts ads directly to Supabase with `job_id`
+6. **Auto-Download Trigger**: When first ad appears → Frontend updates job to `"downloading"` and calls download API
+7. **Parallel Processing**: Media downloads happen in background while more ads are being scraped
+8. **Real-time Updates**: Frontend shows ads appearing and thumbnails loading as downloads complete
+9. **Completion**: All ads scraped and downloads finished → Job status `"completed"` or `"failed"`
+
+### Job Status Flow
+- **`"pending"`** → Job created, webhook about to be called
+- **`"scraping"`** → n8n webhook returned 200, scraping in progress
+- **`"downloading"`** → First ad appeared, media downloads started
+- **`"completed"`** → All processing finished successfully
+- **`"failed"`** → Error at any stage
 
 ## Key Features
 
@@ -127,8 +135,8 @@ ALTER TABLE scraping_jobs REPLICA IDENTITY FULL;
 
 ### n8n Node Flow
 ```
-Webhook (receives job_id + url)
-    ↓
+Webhook (POST: receives job_id + url) → Return 200 immediately
+    ↓ (async continuation)
 Set Meta Ad URL (extract job_id and url)
     ↓
 Run Meta Ad Library Scraper (scrape using url)
@@ -139,8 +147,17 @@ Extract relevant attributes (process ad data)
     ↓
 Edit Fields (add job_id to each ad record)
     ↓
-Respond to Webhook (return ads array with job_id)
+Insert Ads to Supabase (with job_id, triggers real-time subscriptions)
 ```
+
+### Auto-Download Trigger Logic
+- **Frontend Real-time Hook**: Monitors ads table for job_id
+- **First Ad Detection**: When `ads.length > 0` and `job.status === 'scraping'`
+- **Automatic Actions**: 
+  1. Update job status to `"downloading"`
+  2. Call `/api/download-job-media/{jobId}`
+  3. Show progress indicators
+- **Parallel Processing**: Downloads start while scraping continues
 
 ## Implementation Phases
 
@@ -173,12 +190,14 @@ Respond to Webhook (return ads array with job_id)
 ### Phase 2: Core Scraping & Data Flow
 **Duration**: 2-3 days
 
+**Status**: 🔄 **Step 1 COMPLETE** - URL input interface functional, Step 2 next
+
 **Frontend**:
-- [ ] Build `AdLibraryImporter` component
-- [ ] Implement job creation in Supabase
-- [ ] Set up n8n webhook integration
-- [ ] Create basic ads table structure
-- [ ] Implement real-time subscription hooks
+- [x] Build `AdLibraryImporter` component ✅
+- [x] Implement job creation in Supabase ✅
+- [x] Set up n8n webhook integration ✅
+- [ ] Create basic ads table structure (Step 3)
+- [x] Implement real-time subscription hooks ✅
 
 **n8n**:
 - [ ] Update workflow to handle job_id properly
@@ -188,11 +207,11 @@ Respond to Webhook (return ads array with job_id)
 - [ ] Ensure proper error handling
 
 **Backend**:
-- [ ] Create `/api/download-media` endpoint
-- [ ] Implement media download processing with retry logic [0ms, 2s, 8s, 30s]
-- [ ] Set up file upload to Supabase Storage
-- [ ] Add progress tracking and status updates
-- [ ] Implement clear error messages with actionable retry options
+- [x] Create `/api/download-media` endpoint ✅
+- [x] Implement media download processing with retry logic [0ms, 2s, 8s, 30s] ✅
+- [x] Set up file upload to Supabase Storage ✅
+- [x] Add progress tracking and status updates ✅
+- [x] Implement clear error messages with actionable retry options ✅
 
 ### Phase 3: UI Components & Table Features
 **Duration**: 2-3 days
@@ -372,20 +391,22 @@ PORT=3001
 
 ## Success Criteria
 
-### Phase 1 Success
-- [ ] Database schema created and tested
-- [ ] Supabase Storage configured
-- [ ] Basic project structure set up with TypeScript strict mode
-- [ ] Dependencies locked to exact versions (Tailwind 3.4.17)
-- [ ] Python downloader tested
+### Phase 1 Success ✅ COMPLETED
+- [x] Database schema created and tested ✅
+- [x] Supabase Storage configured ✅
+- [x] Basic project structure set up with TypeScript strict mode ✅
+- [x] Dependencies locked to exact versions (Tailwind 3.4.17) ✅
+- [x] Python downloader tested ✅
 
 ### Phase 2 Success
-- [ ] n8n workflow returns data with job_id
-- [ ] Retry logic implemented for webhook and media downloads
-- [ ] Frontend can insert ads into Supabase
-- [ ] Backend can download and store media files with error recovery
-- [ ] Real-time updates working
-- [ ] Clear error messages displayed with retry options
+**Step 1 Complete ✅**: URL input interface with job creation
+- [x] Frontend can create jobs in Supabase ✅
+- [x] Backend can download and store media files with error recovery ✅
+- [x] Real-time updates working ✅
+- [x] Clear error messages displayed with retry options ✅
+- [ ] n8n workflow returns data with job_id (user configured)
+- [ ] Complete ads table with skeleton → data progression (Step 2-3)
+- [ ] Full URL → table display flow working
 
 ### Phase 3 Success
 - [ ] Table displays ads with loading states

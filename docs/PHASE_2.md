@@ -15,11 +15,12 @@ Building the functional Facebook Ad Manager interface with URL input, job creati
 - [x] Build success/error feedback UI ✅
 - [x] Update App.tsx to use AdLibraryImporter ✅
 
-### Step 2: Skeleton-Based Progress Tracking
-- [ ] Create `JobProgress.tsx` with skeleton loading states
-- [ ] Implement progressive enhancement to show real job status
-- [ ] Use existing `useScrapingJob` hook for real-time updates
-- [ ] Add skeleton → "Scraping..." → "Processing X ads" progression
+### Step 2: Status-Based Progress Tracking with Auto-Download
+- [ ] Create `JobProgress.tsx` with status-based progress indicators
+- [ ] Implement 5-state progression: pending → scraping → downloading → completed/failed
+- [ ] Use existing `useScrapingJob` hook for real-time job status updates
+- [ ] Add auto-download trigger when first ad appears in `useRealtimeAds`
+- [ ] Show clear status messages: "Creating job..." → "Scraping ads..." → "Downloading media..."
 
 ### Step 3: Basic Ads Table Structure
 - [ ] Build `AdLibraryTable.tsx` with skeleton rows initially
@@ -27,15 +28,18 @@ Building the functional Facebook Ad Manager interface with URL input, job creati
 - [ ] Create simple table layout (text only, no thumbnails)
 - [ ] Add `SkeletonRow` components while loading
 
-### Step 4: Webhook Integration & Data Flow
-- [ ] Connect frontend job creation to n8n webhook
-- [ ] Test complete flow: URL → Skeleton → Real data display
-- [ ] Implement error handling with clear fallback states
+### Step 4: Webhook Integration & Data Flow ✅ COMPLETED
+- [x] Connect backend job creation to n8n webhook ✅
+- [x] Implement POST webhook with immediate 200 response ✅
+- [x] Add comprehensive error handling with status updates ✅
+- [x] Test complete flow: URL → Backend → n8n webhook trigger ✅
 
-### Step 5: Real-Time Data Population
-- [ ] Replace skeleton states with actual scraped ad data
-- [ ] Display basic ad information (title, page name, dates)
-- [ ] Prepare foundation for Phase 3 thumbnail enhancements
+### Step 5: Auto-Download Integration & Real-Time Data
+- [ ] Implement auto-download trigger logic in `useRealtimeAds`
+- [ ] Add job status transition: scraping → downloading when first ad appears
+- [ ] Connect to existing `/api/download-job-media/{jobId}` endpoint
+- [ ] Display real-time ad data with download progress indicators
+- [ ] Prepare table foundation for Phase 3 thumbnail enhancements
 
 ## Technical Architecture
 
@@ -55,10 +59,21 @@ src/components/
 3. **Thumbnails Load** - (Phase 3 feature, not Phase 2)
 
 ### API Integration Flow
-- Frontend creates job → Shows skeleton progress
-- n8n webhook triggered → Skeleton ads table shown
-- Real data arrives → Skeleton replaced with content
-- Media downloads start → (Phase 3: thumbnails)
+- Frontend creates job → Backend calls n8n webhook → Job status "scraping"
+- n8n scrapes → Inserts ads to Supabase → Real-time subscriptions trigger
+- First ad appears → Auto-trigger downloads → Job status "downloading"
+- Media downloads process → Thumbnails appear → Job status "completed"
+
+### Auto-Download Logic Implementation
+```javascript
+// In useRealtimeAds hook:
+useEffect(() => {
+  if (ads.length > 0 && job.status === 'scraping') {
+    updateJobStatus(job.id, 'downloading');
+    fetch(`/api/download-job-media/${job.id}`, { method: 'POST' });
+  }
+}, [ads.length, job.status]);
+```
 
 ### User Experience Flow
 1. User enters Meta Ad Library URL

@@ -31,7 +31,8 @@
       "Bash(timeout:*)",
       "Bash(pkill:*)",
       "Bash(curl:*)",
-      "Bash(node server.js)"
+      "Bash(node server.js)",
+      "Bash(npm start)"
     ],
     "deny": []
   },

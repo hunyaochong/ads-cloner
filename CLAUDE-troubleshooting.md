@@ -4,23 +4,34 @@
 
 ### n8n Workflow Integration Issues
 
-#### Issue: "n8n webhook not responding"
-**Symptoms**: URL submission hangs or fails without response  
-**Root Cause**: n8n workflow (ID: 8xTPT55gwzaepe62) is not active or webhook misconfigured  
+#### Issue: "n8n webhook not responding or returns error"
+**Symptoms**: Job status stuck on 'pending' or changes to 'failed' immediately  
+**Root Cause**: n8n workflow (ID: 8xTPT55gwzaepe62) is not active, webhook misconfigured, or workflow can't start  
+**Current Status**: Backend properly calls webhook with POST, errors are captured and stored  
 **Solution**:
 ```typescript
-// Check webhook call in AdLibraryImporter component
-const response = await fetch(process.env.REACT_APP_N8N_WEBHOOK_URL, {
+// Backend webhook call (already implemented)
+const n8nResponse = await fetch(process.env.N8N_WEBHOOK_URL, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ job_id: jobId, url: metaUrl })
+  body: JSON.stringify({ job_id: data.id, url: url })
 });
+
+// Check job status in database for error details:
+// status: 'failed', error_message: 'n8n webhook failed: ...'
 ```
 
+**Troubleshooting Steps**:
+1. Verify n8n workflow ID 8xTPT55gwzaepe62 is active
+2. Ensure webhook node accepts POST requests (not GET)
+3. Check webhook returns 200 immediately (don't wait for scraping completion)
+4. Verify n8n can insert data directly to Supabase
+5. Test webhook with curl: `curl -X POST [webhook_url] -H "Content-Type: application/json" -d '{"job_id":"test","url":"test"}'`
+
 **Prevention**:
-- Verify n8n workflow is active and webhook URL is correct
-- Implement timeout handling (30 seconds max)
-- Add retry logic with exponential backoff
+- Set webhook to return 200 immediately, continue processing asynchronously
+- Configure n8n workflow to insert ads directly to Supabase with job_id
+- Monitor job status transitions: pending → scraping → downloading → completed
 
 ---
 
@@ -111,21 +122,50 @@ useEffect(() => {
 
 ---
 
+#### Issue: "Auto-download not triggering"
+**Symptoms**: Job status changes to 'scraping' but never becomes 'downloading', ads appear but media downloads don't start  
+**Root Cause**: Auto-download trigger logic not implemented in frontend  
+**Current Status**: Logic defined but not yet implemented in useRealtimeAds hook  
+**Solution**:
+```typescript
+// Implement in useRealtimeAds hook (Frontend)
+useEffect(() => {
+  if (ads.length > 0 && job.status === 'scraping') {
+    // First ad appeared - trigger downloads automatically
+    updateJobStatus(job.id, 'downloading');
+    fetch(`/api/download-job-media/${job.id}`, { method: 'POST' });
+  }
+}, [ads.length, job.status]);
+```
+
+**Expected Flow**:
+1. Job created (status: 'pending')
+2. Webhook called → status becomes 'scraping'
+3. First ad appears in Supabase → auto-trigger downloads → status becomes 'downloading'
+4. All downloads complete → status becomes 'completed'
+
+---
+
 #### Issue: "Job ID mismatch in ads table"
 **Symptoms**: Ads appear under wrong job or don't appear at all  
-**Root Cause**: n8n workflow not properly adding job_id to each ad  
+**Root Cause**: n8n workflow not properly adding job_id to each ad before Supabase insertion  
+**Current Status**: n8n should insert ads directly to Supabase with job_id (not return to frontend)  
 **Solution**:
-1. Check "Edit Fields" node in n8n workflow
-2. Verify job_id is being passed from webhook correctly
-3. Ensure each ad object includes job_id before database insert
+1. Configure n8n to insert ads directly to Supabase with job_id
+2. Remove "Respond to Webhook" node (not needed with real-time subscriptions)
+3. Verify job_id is being passed from webhook correctly
 
-**n8n Edit Fields Configuration**:
+**n8n Supabase Insert Configuration**:
 ```javascript
-// In Edit Fields node
-return items.map(item => ({
-  ...item.json,
-  job_id: $('Webhook').first().json.body.job_id
-}));
+// In Supabase node: Insert ads with job_id
+// Each ad record should include:
+{
+  ad_archive_id: item.ad_archive_id,
+  media_url: item.media_url,
+  media_type: item.media_type,
+  job_id: $('Webhook').first().json.body.job_id,
+  // ... other ad fields
+}
 ```
 
 ---
@@ -298,7 +338,7 @@ console.error('Supabase operation failed:', error);
 Use browser dev tools to inspect component state:
 
 ```typescript
-// Check scraping job state
+// Check scraping job state (Updated status flow)
 jobState: {
   status: 'pending' | 'scraping' | 'downloading' | 'completed' | 'failed',
   total_ads: number,
@@ -306,6 +346,13 @@ jobState: {
   downloaded_ads: number,
   error_message: string | null
 }
+
+// Status Flow Debugging:
+// 'pending' → Backend creates job, about to call webhook
+// 'scraping' → Webhook returned 200, n8n processing
+// 'downloading' → First ad appeared, downloads triggered
+// 'completed' → All processing finished
+// 'failed' → Error at any stage
 
 // Check ad table state
 {
